@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Travel Photo Scorer — Results Viewer</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
   <style>
@@ -12,131 +11,193 @@
 
     :root {
       --bg: #ffffff;
-      --bg-secondary: #f5f5f4;
+      --bg-s: #f5f5f4;
+      --bg-t: #eeede9;
       --text: #1a1a18;
-      --text-secondary: #6b6b66;
-      --border: rgba(0,0,0,0.12);
-      --border-em: rgba(0,0,0,0.25);
+      --text-s: #6b6b66;
+      --border: rgba(0,0,0,0.1);
+      --border-em: rgba(0,0,0,0.2);
       --radius: 8px;
       --radius-lg: 12px;
+      --header-h: 56px;
     }
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #1c1c1a;
-        --bg-secondary: #262624;
+        --bg: #161614;
+        --bg-s: #1f1f1d;
+        --bg-t: #282826;
         --text: #f0ede8;
-        --text-secondary: #9b9b96;
-        --border: rgba(255,255,255,0.1);
-        --border-em: rgba(255,255,255,0.22);
+        --text-s: #9b9b96;
+        --border: rgba(255,255,255,0.09);
+        --border-em: rgba(255,255,255,0.18);
       }
     }
 
-    body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg-s); color: var(--text); font-size: 14px; line-height: 1.5; height: 100vh; display: flex; flex-direction: column; }
 
-    header { padding: 1.5rem 2rem; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; gap: 12px; }
-    header h1 { font-size: 17px; font-weight: 500; }
-    header p  { font-size: 13px; color: var(--text-secondary); margin: 0; }
+    /* ── Header ── */
+    header { height: var(--header-h); background: var(--bg); border-bottom: 0.5px solid var(--border); display: flex; align-items: center; padding: 0 1.5rem; gap: 12px; flex-shrink: 0; }
+    header h1 { font-size: 15px; font-weight: 500; }
+    header .sub { font-size: 12px; color: var(--text-s); }
+    .header-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
 
-    main { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+    /* ── View toggle ── */
+    .view-toggle { display: flex; background: var(--bg-s); border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .view-btn { padding: 5px 10px; border: none; background: none; cursor: pointer; color: var(--text-s); font-size: 16px; display: flex; align-items: center; transition: background 0.1s, color 0.1s; }
+    .view-btn.active { background: var(--bg); color: var(--text); }
+    .view-btn:hover:not(.active) { background: var(--bg-t); }
 
-    .drop-zone { border: 1.5px dashed var(--border-em); border-radius: var(--radius-lg); padding: 2.5rem; text-align: center; cursor: pointer; transition: background 0.15s; margin-bottom: 2rem; }
-    .drop-zone:hover, .drop-zone.over { background: var(--bg-secondary); }
-    .drop-zone i { font-size: 32px; color: var(--text-secondary); display: block; margin-bottom: 10px; }
-    .drop-zone p { color: var(--text-secondary); font-size: 14px; }
-    .drop-zone p.hint { font-size: 12px; opacity: 0.6; margin-top: 4px; }
+    /* ── Upload ── */
+    #upload-area { flex: 1; display: flex; align-items: center; justify-content: center; }
+    .drop-zone { border: 1.5px dashed var(--border-em); border-radius: var(--radius-lg); padding: 3rem 4rem; text-align: center; cursor: pointer; transition: background 0.15s; background: var(--bg); }
+    .drop-zone:hover, .drop-zone.over { background: var(--bg-s); }
+    .drop-zone i { font-size: 36px; color: var(--text-s); display: block; margin-bottom: 12px; }
+    .drop-zone p { color: var(--text-s); font-size: 14px; }
+    .drop-zone p.hint { font-size: 12px; opacity: 0.6; margin-top: 6px; }
 
-    .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
-    .metric { background: var(--bg-secondary); border-radius: var(--radius); padding: 1rem; }
-    .metric-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; }
-    .metric-value { font-size: 22px; font-weight: 500; }
+    /* ── Dashboard layout ── */
+    #dashboard { flex: 1; display: none; flex-direction: column; overflow: hidden; }
 
-    .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 1.5rem; }
-    .chart-card { background: var(--bg-secondary); border-radius: var(--radius-lg); padding: 1rem 1.25rem; }
-    .chart-card h3 { font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 12px; }
-    .chart-wrap { position: relative; height: 200px; }
+    /* ── Stats bar ── */
+    .stats-bar { background: var(--bg); border-bottom: 0.5px solid var(--border); padding: 0 1.5rem; display: flex; gap: 0; flex-shrink: 0; overflow-x: auto; }
+    .stat { padding: 10px 20px; border-right: 0.5px solid var(--border); text-align: center; white-space: nowrap; }
+    .stat:first-child { padding-left: 0; }
+    .stat-label { font-size: 10px; color: var(--text-s); text-transform: uppercase; letter-spacing: 0.04em; }
+    .stat-value { font-size: 20px; font-weight: 500; line-height: 1.2; }
 
-    .legend { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
-    .legend span { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-secondary); }
-    .legend-dot { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+    /* ── Charts row ── */
+    .charts-row { background: var(--bg); border-bottom: 0.5px solid var(--border); padding: 1rem 1.5rem; display: flex; gap: 24px; align-items: flex-start; flex-shrink: 0; }
+    .chart-block { flex: 1; min-width: 0; }
+    .chart-block h3 { font-size: 11px; font-weight: 500; color: var(--text-s); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .chart-wrap { position: relative; height: 120px; }
+    .legend { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+    .legend span { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-s); }
+    .legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
 
-    .table-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
-    .table-card-header { padding: 10px 14px; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; }
-    .table-card-header span.hint { font-size: 12px; color: var(--text-secondary); margin-left: auto; }
+    /* ── Content area ── */
+    .content-area { flex: 1; overflow-y: auto; padding: 1.25rem 1.5rem; }
+
+    /* ── TABLE VIEW ── */
+    .table-wrap { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
-    th { text-align: left; font-size: 11px; font-weight: 500; color: var(--text-secondary); padding: 7px 10px; border-bottom: 0.5px solid var(--border); white-space: nowrap; }
-    td { padding: 6px 10px; border-bottom: 0.5px solid var(--border); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; }
+    th { text-align: left; font-size: 11px; font-weight: 500; color: var(--text-s); padding: 8px 12px; border-bottom: 0.5px solid var(--border); white-space: nowrap; background: var(--bg-s); }
+    td { padding: 6px 12px; border-bottom: 0.5px solid var(--border); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; }
     tr:last-child td { border-bottom: none; }
-    tr:hover td { background: var(--bg-secondary); }
-
+    tr:hover td { background: var(--bg-s); }
     .thumb-wrap { position: relative; width: 60px; height: 42px; display: inline-block; }
-    .thumb { width: 60px; height: 42px; object-fit: cover; border-radius: 4px; display: block; background: var(--bg-secondary); }
+    .thumb { width: 60px; height: 42px; object-fit: cover; border-radius: 4px; display: block; background: var(--bg-s); }
     .thumb-score { position: absolute; bottom: 2px; right: 2px; font-size: 10px; font-weight: 600; padding: 1px 5px; border-radius: 3px; line-height: 1.5; }
-
-    .badge { display: inline-block; font-size: 11px; padding: 2px 7px; border-radius: var(--radius); font-weight: 500; }
     .score-bar-bg { background: var(--border); border-radius: 4px; height: 5px; width: 56px; display: inline-block; vertical-align: middle; margin-right: 5px; }
     .score-bar { height: 5px; border-radius: 4px; }
+
+    /* ── GRID VIEW ── */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+
+    .asset-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; display: flex; flex-direction: column; transition: box-shadow 0.15s; }
+    .asset-card:hover { border-color: var(--border-em); }
+
+    .card-img-wrap { position: relative; width: 100%; padding-top: 66%; overflow: hidden; background: var(--bg-t); }
+    .card-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+    .card-score-badge { position: absolute; top: 8px; right: 8px; font-size: 15px; font-weight: 600; padding: 3px 10px; border-radius: 6px; line-height: 1.4; }
+
+    .card-body { padding: 10px 12px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+    .card-filename { font-size: 12px; color: var(--text-s); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .card-filename a { color: var(--text-s); text-decoration: none; }
+    .card-filename a:hover { color: var(--text); }
+
+    .card-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+    .tag { font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 500; white-space: nowrap; }
+    .tag-face   { background: #E6F1FB; color: #185FA5; }
+    .tag-travel { background: #EAF3DE; color: #3B6D11; }
+    .tag-text   { background: #FCEBEB; color: #A32D2D; }
+    .tag-sign   { background: #FCEBEB; color: #A32D2D; }
+    .tag-ai     { background: #EEEDFE; color: #3C3489; }
+    @media (prefers-color-scheme: dark) {
+      .tag-face   { background: #0C447C; color: #B5D4F4; }
+      .tag-travel { background: #27500A; color: #C0DD97; }
+      .tag-text   { background: #791F1F; color: #F7C1C1; }
+      .tag-sign   { background: #791F1F; color: #F7C1C1; }
+      .tag-ai     { background: #3C3489; color: #CECBF6; }
+    }
+
+    .card-details { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 8px; font-size: 11px; color: var(--text-s); border-top: 0.5px solid var(--border); padding-top: 8px; }
+    .card-details .detail-label { color: var(--text-s); }
+    .card-details .detail-value { color: var(--text); font-weight: 500; text-align: right; }
+
+    .method-pill { font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: 20px; }
+    .method-high { background: #EAF3DE; color: #3B6D11; }
+    .method-low  { background: #FCEBEB; color: #A32D2D; }
+    .method-ai   { background: #EEEDFE; color: #3C3489; }
+    @media (prefers-color-scheme: dark) {
+      .method-high { background: #27500A; color: #C0DD97; }
+      .method-low  { background: #791F1F; color: #F7C1C1; }
+      .method-ai   { background: #3C3489; color: #CECBF6; }
+    }
 
     a { color: #185FA5; text-decoration: none; }
     a:hover { text-decoration: underline; }
     @media (prefers-color-scheme: dark) { a { color: #85B7EB; } }
-
-    @media (max-width: 640px) {
-      .charts { grid-template-columns: 1fr; }
-      main { padding: 1rem; }
-    }
   </style>
 </head>
 <body>
 
 <header>
-  <i class="ti ti-camera" style="font-size:22px;" aria-hidden="true"></i>
+  <i class="ti ti-camera" style="font-size:20px;" aria-hidden="true"></i>
   <div>
     <h1>Travel Photo Scorer</h1>
-    <p>Results viewer — drop a scored CSV to explore</p>
+  </div>
+  <div class="header-actions">
+    <label style="font-size:12px; color:var(--text-s); cursor:pointer; display:flex; align-items:center; gap:6px;">
+      <i class="ti ti-upload" style="font-size:15px;" aria-hidden="true"></i>
+      Load CSV
+      <input type="file" id="file-input" accept=".csv" style="display:none;">
+    </label>
+    <div class="view-toggle" id="view-toggle" style="display:none;">
+      <button class="view-btn active" id="btn-table" title="Table view" aria-label="Table view">
+        <i class="ti ti-layout-list" aria-hidden="true"></i>
+      </button>
+      <button class="view-btn" id="btn-grid" title="Grid view" aria-label="Grid view">
+        <i class="ti ti-layout-grid" aria-hidden="true"></i>
+      </button>
+    </div>
   </div>
 </header>
 
-<main>
-  <div id="upload-area">
-    <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
-      <i class="ti ti-upload" aria-hidden="true"></i>
-      <p>Drop your <code>_scored.csv</code> here or click to browse</p>
-      <p class="hint">Output from analyze_csv.mjs</p>
+<div id="upload-area">
+  <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+    <i class="ti ti-table-import" aria-hidden="true"></i>
+    <p>Drop your <code>_scored.csv</code> here or click to browse</p>
+    <p class="hint">Output from analyze_csv.mjs</p>
+  </div>
+</div>
+
+<div id="dashboard">
+  <div class="stats-bar" id="stats-bar"></div>
+
+  <div class="charts-row">
+    <div class="chart-block" style="max-width:420px;">
+      <h3>Score distribution</h3>
+      <div class="chart-wrap"><canvas id="distChart" role="img" aria-label="Histogram of final scores 0-100"></canvas></div>
     </div>
-    <input type="file" id="file-input" accept=".csv" style="display:none;">
+    <div class="chart-block" style="max-width:200px;">
+      <h3>Scoring method</h3>
+      <div class="chart-wrap"><canvas id="methodChart" role="img" aria-label="Donut chart of scoring methods"></canvas></div>
+      <div class="legend" id="method-legend"></div>
+    </div>
   </div>
 
-  <div id="dashboard" style="display:none;">
-    <div class="metrics" id="metrics"></div>
-
-    <div class="charts">
-      <div class="chart-card">
-        <h3>Score distribution</h3>
-        <div class="chart-wrap"><canvas id="distChart" role="img" aria-label="Histogram of final scores 0-100"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <h3>Scoring method</h3>
-        <div class="chart-wrap"><canvas id="methodChart" role="img" aria-label="Donut chart of scoring methods"></canvas></div>
-        <div class="legend" id="method-legend"></div>
-      </div>
-    </div>
-
-    <div class="table-card">
-      <div class="table-card-header">
-        <i class="ti ti-photo" style="font-size:16px; color:var(--text-secondary);" aria-hidden="true"></i>
-        All images
-        <span class="hint">sorted by score ↓</span>
-      </div>
-      <div style="overflow-x:auto;">
+  <div class="content-area">
+    <div id="view-table">
+      <div class="table-wrap">
         <table>
           <thead>
             <tr>
               <th style="width:76px;"></th>
-              <th style="width:28%;">File</th>
+              <th style="width:30%;">File</th>
               <th style="width:8%;">Faces</th>
               <th style="width:18%;">Travel labels</th>
-              <th style="width:8%;">Text</th>
-              <th style="width:8%;">Sign</th>
+              <th style="width:7%;">Text</th>
+              <th style="width:7%;">Sign</th>
               <th style="width:6%;">IQA</th>
               <th style="width:10%;">Method</th>
             </tr>
@@ -145,8 +206,11 @@
         </table>
       </div>
     </div>
+    <div id="view-grid" style="display:none;">
+      <div class="grid" id="grid-body"></div>
+    </div>
   </div>
-</main>
+</div>
 
 <script>
 const dropZone = document.getElementById('drop-zone');
@@ -155,6 +219,16 @@ dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classL
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
 dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('over'); loadFile(e.dataTransfer.files[0]); });
 fileInput.addEventListener('change', e => loadFile(e.target.files[0]));
+
+document.getElementById('btn-table').addEventListener('click', () => setView('table'));
+document.getElementById('btn-grid').addEventListener('click', () => setView('grid'));
+
+function setView(v) {
+  document.getElementById('view-table').style.display = v === 'table' ? '' : 'none';
+  document.getElementById('view-grid').style.display  = v === 'grid'  ? '' : 'none';
+  document.getElementById('btn-table').classList.toggle('active', v === 'table');
+  document.getElementById('btn-grid').classList.toggle('active', v === 'grid');
+}
 
 function loadFile(file) {
   const reader = new FileReader();
@@ -185,8 +259,8 @@ function splitRow(line) {
   return fields;
 }
 
-function thumbUrl(url) {
-  return url.replace('/image/upload/', '/image/upload/w_120,h_84,c_fill/');
+function thumbUrl(url, w, h) {
+  return url.replace('/image/upload/', `/image/upload/w_${w},h_${h},c_fill/`);
 }
 
 function scoreColors(s) {
@@ -196,37 +270,45 @@ function scoreColors(s) {
 }
 
 function icon(yes, danger) {
-  const color = yes ? (danger ? '#E24B4A' : '#639922') : 'var(--text-secondary)';
+  const color = yes ? (danger ? '#E24B4A' : '#639922') : 'var(--text-s)';
   return `<i class="ti ${yes ? 'ti-check' : 'ti-minus'}" style="color:${color}" aria-label="${yes ? 'yes' : 'no'}"></i>`;
 }
 
-function methodLabel(m) {
-  if (!m) return '—';
-  if (m.startsWith('rule:high')) return '<span style="color:#3B6D11;font-size:11px;">rule: high</span>';
-  if (m.startsWith('rule:low'))  return '<span style="color:#A32D2D;font-size:11px;">rule: low</span>';
-  return '<span style="color:#534AB7;font-size:11px;">ai vision</span>';
+function methodClass(m) {
+  if (!m) return 'method-ai';
+  if (m.startsWith('rule:high')) return 'method-high';
+  if (m.startsWith('rule:low'))  return 'method-low';
+  return 'method-ai';
+}
+
+function methodShort(m) {
+  if (!m) return 'ai vision';
+  if (m.startsWith('rule:high')) return 'rule: high';
+  if (m.startsWith('rule:low'))  return 'rule: low';
+  return 'ai vision';
 }
 
 function render(rows) {
   rows.sort((a, b) => Number(b.final_score) - Number(a.final_score));
   document.getElementById('upload-area').style.display = 'none';
-  document.getElementById('dashboard').style.display = 'block';
+  document.getElementById('dashboard').style.display = 'flex';
+  document.getElementById('view-toggle').style.display = '';
 
   const scores = rows.map(r => Number(r.final_score)).filter(n => !isNaN(n));
   const avg = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
-  const aiCalls    = rows.filter(r => r.ai_vision_called === 'true').length;
-  const totalAddon  = rows.reduce((s, r) => s + (Number(r.addon_units) || 0), 0);
+  const aiCalls     = rows.filter(r => r.ai_vision_called === 'true').length;
+  const totalAddon  = rows.reduce((s, r) => s + (Number(r.addon_units)  || 0), 0);
   const totalGoogle = rows.reduce((s, r) => s + (Number(r.google_units) || 0), 0);
   const totalAI     = rows.reduce((s, r) => s + (Number(r.ai_vision_tokens) || 0), 0);
 
-  document.getElementById('metrics').innerHTML = [
+  document.getElementById('stats-bar').innerHTML = [
     ['Images', rows.length],
     ['Avg score', avg],
     ['AI Vision calls', aiCalls],
     ['Add-on units', totalAddon],
     ['Google units', totalGoogle],
     ['AI Vision tokens', totalAI],
-  ].map(([label, value]) => `<div class="metric"><div class="metric-label">${label}</div><div class="metric-value">${value}</div></div>`).join('');
+  ].map(([label, value]) => `<div class="stat"><div class="stat-label">${label}</div><div class="stat-value">${value}</div></div>`).join('');
 
   const buckets = Array(10).fill(0);
   scores.forEach(s => { buckets[Math.min(9, Math.floor(s / 10))]++; });
@@ -234,17 +316,14 @@ function render(rows) {
   new Chart(document.getElementById('distChart'), {
     type: 'bar',
     data: {
-      labels: ['0-9','10-19','20-29','30-39','40-49','50-59','60-69','70-79','80-89','90-100'],
+      labels: ['0','10','20','30','40','50','60','70','80','90+'],
       datasets: [{ data: buckets, backgroundColor: buckets.map((_, i) => i >= 8 ? '#639922' : i >= 3 ? '#BA7517' : '#E24B4A'), borderRadius: 3 }]
     },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { font: { size: 10 }, autoSkip: false, maxRotation: 45 } }, y: { ticks: { stepSize: 1 } } } }
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { font: { size: 10 } } }, y: { ticks: { stepSize: 1 } } } }
   });
 
   const methodCounts = {};
-  rows.forEach(r => {
-    const m = r.method?.startsWith('rule:high') ? 'rule: high' : r.method?.startsWith('rule:low') ? 'rule: low' : 'ai vision';
-    methodCounts[m] = (methodCounts[m] || 0) + 1;
-  });
+  rows.forEach(r => { const m = methodShort(r.method); methodCounts[m] = (methodCounts[m] || 0) + 1; });
   const mLabels = Object.keys(methodCounts);
   const mColors = mLabels.map(l => l === 'rule: high' ? '#639922' : l === 'rule: low' ? '#E24B4A' : '#7F77DD');
 
@@ -258,29 +337,63 @@ function render(rows) {
     `<span><span class="legend-dot" style="background:${mColors[i]}"></span>${l} (${methodCounts[l]})</span>`
   ).join('');
 
+  // ── Table ──
   document.getElementById('table-body').innerHTML = rows.map(r => {
     const s = Number(r.final_score);
     const { bg, text } = scoreColors(s);
     const fname = r.url?.split('/').pop() ?? r.url;
     const tLabels = r.travel_labels ? r.travel_labels.split('|') : [];
-    const labelText = tLabels.length ? tLabels.slice(0,2).join(', ') + (tLabels.length > 2 ? '…' : '') : '—';
     return `<tr>
-      <td style="width:76px;padding:4px 10px;">
+      <td style="padding:4px 12px;">
         <a href="${r.url}" target="_blank" rel="noopener">
           <div class="thumb-wrap">
-            <img class="thumb" src="${thumbUrl(r.url)}" alt="" loading="lazy">
+            <img class="thumb" src="${thumbUrl(r.url, 120, 84)}" alt="" loading="lazy">
             <span class="thumb-score" style="background:${bg};color:${text}">${s}</span>
           </div>
         </a>
       </td>
       <td title="${r.url}"><a href="${r.url}" target="_blank" rel="noopener">${fname}</a></td>
       <td>${icon(r.faces_detected === 'true', false)}</td>
-      <td title="${r.travel_labels || ''}">${labelText}</td>
+      <td title="${r.travel_labels || ''}">${tLabels.length ? tLabels.slice(0,2).join(', ') + (tLabels.length > 2 ? '…' : '') : '—'}</td>
       <td>${icon(r.text_detected === 'true', true)}</td>
       <td>${icon(r.signs_detected === 'true', true)}</td>
       <td>${r.iqa_score || '—'}</td>
-      <td>${methodLabel(r.method)}</td>
+      <td><span class="method-pill ${methodClass(r.method)}">${methodShort(r.method)}</span></td>
     </tr>`;
+  }).join('');
+
+  // ── Grid ──
+  document.getElementById('grid-body').innerHTML = rows.map(r => {
+    const s = Number(r.final_score);
+    const { bg, text } = scoreColors(s);
+    const fname = r.url?.split('/').pop() ?? r.url;
+    const tLabels = r.travel_labels ? r.travel_labels.split('|') : [];
+
+    const tags = [];
+    if (r.faces_detected === 'true') tags.push(`<span class="tag tag-face"><i class="ti ti-user" style="font-size:10px" aria-hidden="true"></i> faces</span>`);
+    tLabels.slice(0, 3).forEach(l => tags.push(`<span class="tag tag-travel">${l}</span>`));
+    if (r.text_detected === 'true')  tags.push(`<span class="tag tag-text"><i class="ti ti-letter-t" style="font-size:10px" aria-hidden="true"></i> text</span>`);
+    if (r.signs_detected === 'true') tags.push(`<span class="tag tag-sign"><i class="ti ti-road-sign" style="font-size:10px" aria-hidden="true"></i> sign</span>`);
+    if (r.ai_vision_called === 'true') tags.push(`<span class="tag tag-ai"><i class="ti ti-sparkles" style="font-size:10px" aria-hidden="true"></i> ai vision</span>`);
+
+    return `<div class="asset-card">
+      <a href="${r.url}" target="_blank" rel="noopener">
+        <div class="card-img-wrap">
+          <img class="card-img" src="${thumbUrl(r.url, 480, 320)}" alt="" loading="lazy">
+          <span class="card-score-badge" style="background:${bg};color:${text}">${s}</span>
+        </div>
+      </a>
+      <div class="card-body">
+        <div class="card-filename" title="${r.url}"><a href="${r.url}" target="_blank" rel="noopener">${fname}</a></div>
+        ${tags.length ? `<div class="card-tags">${tags.join('')}</div>` : ''}
+        <div class="card-details">
+          <span class="detail-label">IQA</span><span class="detail-value">${r.iqa_score || '—'}</span>
+          <span class="detail-label">Method</span><span class="detail-value"><span class="method-pill ${methodClass(r.method)}">${methodShort(r.method)}</span></span>
+          <span class="detail-label">Add-on</span><span class="detail-value">${r.addon_units || 0} units</span>
+          <span class="detail-label">Google</span><span class="detail-value">${r.google_units || 0} units</span>
+        </div>
+      </div>
+    </div>`;
   }).join('');
 }
 </script>
