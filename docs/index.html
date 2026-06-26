@@ -250,6 +250,7 @@ function buildWeightsUI() {
       const k = el.dataset.key;
       weights[k] = Number(el.value);
       document.getElementById('wv_' + k).textContent = el.value;
+      document.getElementById('sort-field').value = 'compound';
       rerender();
     });
   });
