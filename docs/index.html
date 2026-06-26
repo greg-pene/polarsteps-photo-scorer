@@ -59,14 +59,16 @@
     .toolbar-sep { width: 0.5px; height: 20px; background: var(--border-em); margin: 0 4px; }
 
     /* Weights panel */
-    .weights-panel { background: var(--bg-s); border-bottom: 0.5px solid var(--border); padding: 10px 1.25rem; display: none; flex-shrink: 0; }
+    .weights-panel { background: var(--bg-s); border-bottom: 0.5px solid var(--border); padding: 12px 1.25rem; display: none; flex-shrink: 0; }
     .weights-panel.open { display: block; }
-    .weights-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px 20px; }
-    .weight-row { display: flex; align-items: center; gap: 8px; }
-    .weight-label { font-size: 12px; color: var(--text-s); width: 110px; flex-shrink: 0; display: flex; align-items: center; gap: 5px; }
-    .weight-label i { font-size: 13px; }
-    input[type=range] { flex: 1; height: 4px; cursor: pointer; accent-color: #185FA5; }
-    .weight-val { font-size: 12px; font-weight: 500; width: 28px; text-align: right; color: var(--text); }
+    .weights-grid { display: flex; gap: 8px; flex-wrap: wrap; }
+    .weight-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; width: 150px; flex-shrink: 0; }
+    .weight-card-header { display: flex; align-items: center; justify-content: space-between; }
+    .weight-card-label { font-size: 11px; color: var(--text-s); display: flex; align-items: center; gap: 5px; }
+    .weight-card-label i { font-size: 14px; color: var(--text-s); }
+    .weight-card-value { font-size: 18px; font-weight: 500; line-height: 1; color: var(--text); min-width: 22px; text-align: right; }
+    .weight-card input[type=range] { width: 100%; cursor: pointer; accent-color: #185FA5; margin: 0; }
+    .weight-card-type { font-size: 10px; color: var(--text-s); opacity: 0.7; }
     .weights-actions { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
     .compound-note { font-size: 11px; color: var(--text-s); }
 
@@ -231,10 +233,15 @@ function getWeightsGrid() {
 
 function buildWeightsUI() {
   getWeightsGrid().innerHTML = WEIGHTS_DEF.map(w => `
-    <div class="weight-row">
-      <span class="weight-label"><i class="ti ${w.icon}" aria-hidden="true"></i>${w.label}${w.sign < 0 ? '' : ''}</span>
+    <div class="weight-card">
+      <div class="weight-card-header">
+        <span class="weight-card-label">
+          <i class="ti ${w.icon}" aria-hidden="true"></i>${w.label}
+        </span>
+        <span class="weight-card-value" id="wv_${w.key}">${weights[w.key]}</span>
+      </div>
       <input type="range" min="${w.min}" max="${w.max}" step="1" value="${weights[w.key]}" data-key="${w.key}" aria-label="${w.label} weight">
-      <span class="weight-val" id="wv_${w.key}">${weights[w.key]}</span>
+      <span class="weight-card-type">${w.sign < 0 ? 'penalty' : 'boost'}</span>
     </div>
   `).join('');
 
