@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Travel Photo Scorer — Results Viewer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --bg-secondary: #f5f5f4;
+      --text: #1a1a18;
+      --text-secondary: #6b6b66;
+      --border: rgba(0,0,0,0.12);
+      --border-em: rgba(0,0,0,0.25);
+      --radius: 8px;
+      --radius-lg: 12px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1c1c1a;
+        --bg-secondary: #262624;
+        --text: #f0ede8;
+        --text-secondary: #9b9b96;
+        --border: rgba(255,255,255,0.1);
+        --border-em: rgba(255,255,255,0.22);
+      }
+    }
+
+    body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6; }
+
+    header { padding: 1.5rem 2rem; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; gap: 12px; }
+    header h1 { font-size: 17px; font-weight: 500; }
+    header p  { font-size: 13px; color: var(--text-secondary); margin: 0; }
+
+    main { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+
+    .drop-zone { border: 1.5px dashed var(--border-em); border-radius: var(--radius-lg); padding: 2.5rem; text-align: center; cursor: pointer; transition: background 0.15s; margin-bottom: 2rem; }
+    .drop-zone:hover, .drop-zone.over { background: var(--bg-secondary); }
+    .drop-zone i { font-size: 32px; color: var(--text-secondary); display: block; margin-bottom: 10px; }
+    .drop-zone p { color: var(--text-secondary); font-size: 14px; }
+    .drop-zone p.hint { font-size: 12px; opacity: 0.6; margin-top: 4px; }
+
+    .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
+    .metric { background: var(--bg-secondary); border-radius: var(--radius); padding: 1rem; }
+    .metric-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; }
+    .metric-value { font-size: 22px; font-weight: 500; }
+
+    .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 1.5rem; }
+    .chart-card { background: var(--bg-secondary); border-radius: var(--radius-lg); padding: 1rem 1.25rem; }
+    .chart-card h3 { font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 12px; }
+    .chart-wrap { position: relative; height: 200px; }
+
+    .legend { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
+    .legend span { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-secondary); }
+    .legend-dot { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+
+    .table-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .table-card-header { padding: 10px 14px; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; }
+    .table-card-header span.hint { font-size: 12px; color: var(--text-secondary); margin-left: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+    th { text-align: left; font-size: 11px; font-weight: 500; color: var(--text-secondary); padding: 7px 10px; border-bottom: 0.5px solid var(--border); white-space: nowrap; }
+    td { padding: 6px 10px; border-bottom: 0.5px solid var(--border); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--bg-secondary); }
+
+    .thumb-wrap { position: relative; width: 60px; height: 42px; display: inline-block; }
+    .thumb { width: 60px; height: 42px; object-fit: cover; border-radius: 4px; display: block; background: var(--bg-secondary); }
+    .thumb-score { position: absolute; bottom: 2px; right: 2px; font-size: 10px; font-weight: 600; padding: 1px 5px; border-radius: 3px; line-height: 1.5; }
+
+    .badge { display: inline-block; font-size: 11px; padding: 2px 7px; border-radius: var(--radius); font-weight: 500; }
+    .score-bar-bg { background: var(--border); border-radius: 4px; height: 5px; width: 56px; display: inline-block; vertical-align: middle; margin-right: 5px; }
+    .score-bar { height: 5px; border-radius: 4px; }
+
+    a { color: #185FA5; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    @media (prefers-color-scheme: dark) { a { color: #85B7EB; } }
+
+    @media (max-width: 640px) {
+      .charts { grid-template-columns: 1fr; }
+      main { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <i class="ti ti-camera" style="font-size:22px;" aria-hidden="true"></i>
+  <div>
+    <h1>Travel Photo Scorer</h1>
+    <p>Results viewer — drop a scored CSV to explore</p>
+  </div>
+</header>
+
+<main>
+  <div id="upload-area">
+    <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+      <i class="ti ti-upload" aria-hidden="true"></i>
+      <p>Drop your <code>_scored.csv</code> here or click to browse</p>
+      <p class="hint">Output from analyze_csv.mjs</p>
+    </div>
+    <input type="file" id="file-input" accept=".csv" style="display:none;">
+  </div>
+
+  <div id="dashboard" style="display:none;">
+    <div class="metrics" id="metrics"></div>
+
+    <div class="charts">
+      <div class="chart-card">
+        <h3>Score distribution</h3>
+        <div class="chart-wrap"><canvas id="distChart" role="img" aria-label="Histogram of final scores 0-100"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Scoring method</h3>
+        <div class="chart-wrap"><canvas id="methodChart" role="img" aria-label="Donut chart of scoring methods"></canvas></div>
+        <div class="legend" id="method-legend"></div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-card-header">
+        <i class="ti ti-photo" style="font-size:16px; color:var(--text-secondary);" aria-hidden="true"></i>
+        All images
+        <span class="hint">sorted by score ↓</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:76px;"></th>
+              <th style="width:28%;">File</th>
+              <th style="width:8%;">Faces</th>
+              <th style="width:18%;">Travel labels</th>
+              <th style="width:8%;">Text</th>
+              <th style="width:8%;">Sign</th>
+              <th style="width:6%;">IQA</th>
+              <th style="width:10%;">Method</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('over'); loadFile(e.dataTransfer.files[0]); });
+fileInput.addEventListener('change', e => loadFile(e.target.files[0]));
+
+function loadFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => render(parseCSV(e.target.result));
+  reader.readAsText(file);
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const headers = splitRow(lines[0]);
+  return lines.slice(1).filter(l => l.trim()).map(l => {
+    const vals = splitRow(l);
+    const obj = {};
+    headers.forEach((h, i) => obj[h.trim()] = (vals[i] ?? '').trim());
+    return obj;
+  });
+}
+
+function splitRow(line) {
+  const fields = []; let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') { if (inQ && line[i+1] === '"') { cur += '"'; i++; } else inQ = !inQ; }
+    else if (c === ',' && !inQ) { fields.push(cur); cur = ''; }
+    else cur += c;
+  }
+  fields.push(cur);
+  return fields;
+}
+
+function thumbUrl(url) {
+  return url.replace('/image/upload/', '/image/upload/w_120,h_84,c_fill/');
+}
+
+function scoreColors(s) {
+  if (s >= 75) return { bg: '#3B6D11', text: '#fff' };
+  if (s >= 25) return { bg: '#854F0B', text: '#fff' };
+  return { bg: '#A32D2D', text: '#fff' };
+}
+
+function icon(yes, danger) {
+  const color = yes ? (danger ? '#E24B4A' : '#639922') : 'var(--text-secondary)';
+  return `<i class="ti ${yes ? 'ti-check' : 'ti-minus'}" style="color:${color}" aria-label="${yes ? 'yes' : 'no'}"></i>`;
+}
+
+function methodLabel(m) {
+  if (!m) return '—';
+  if (m.startsWith('rule:high')) return '<span style="color:#3B6D11;font-size:11px;">rule: high</span>';
+  if (m.startsWith('rule:low'))  return '<span style="color:#A32D2D;font-size:11px;">rule: low</span>';
+  return '<span style="color:#534AB7;font-size:11px;">ai vision</span>';
+}
+
+function render(rows) {
+  rows.sort((a, b) => Number(b.final_score) - Number(a.final_score));
+  document.getElementById('upload-area').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+
+  const scores = rows.map(r => Number(r.final_score)).filter(n => !isNaN(n));
+  const avg = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+  const aiCalls    = rows.filter(r => r.ai_vision_called === 'true').length;
+  const totalAddon  = rows.reduce((s, r) => s + (Number(r.addon_units) || 0), 0);
+  const totalGoogle = rows.reduce((s, r) => s + (Number(r.google_units) || 0), 0);
+  const totalAI     = rows.reduce((s, r) => s + (Number(r.ai_vision_tokens) || 0), 0);
+
+  document.getElementById('metrics').innerHTML = [
+    ['Images', rows.length],
+    ['Avg score', avg],
+    ['AI Vision calls', aiCalls],
+    ['Add-on units', totalAddon],
+    ['Google units', totalGoogle],
+    ['AI Vision tokens', totalAI],
+  ].map(([label, value]) => `<div class="metric"><div class="metric-label">${label}</div><div class="metric-value">${value}</div></div>`).join('');
+
+  const buckets = Array(10).fill(0);
+  scores.forEach(s => { buckets[Math.min(9, Math.floor(s / 10))]++; });
+
+  new Chart(document.getElementById('distChart'), {
+    type: 'bar',
+    data: {
+      labels: ['0-9','10-19','20-29','30-39','40-49','50-59','60-69','70-79','80-89','90-100'],
+      datasets: [{ data: buckets, backgroundColor: buckets.map((_, i) => i >= 8 ? '#639922' : i >= 3 ? '#BA7517' : '#E24B4A'), borderRadius: 3 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { font: { size: 10 }, autoSkip: false, maxRotation: 45 } }, y: { ticks: { stepSize: 1 } } } }
+  });
+
+  const methodCounts = {};
+  rows.forEach(r => {
+    const m = r.method?.startsWith('rule:high') ? 'rule: high' : r.method?.startsWith('rule:low') ? 'rule: low' : 'ai vision';
+    methodCounts[m] = (methodCounts[m] || 0) + 1;
+  });
+  const mLabels = Object.keys(methodCounts);
+  const mColors = mLabels.map(l => l === 'rule: high' ? '#639922' : l === 'rule: low' ? '#E24B4A' : '#7F77DD');
+
+  new Chart(document.getElementById('methodChart'), {
+    type: 'doughnut',
+    data: { labels: mLabels, datasets: [{ data: mLabels.map(l => methodCounts[l]), backgroundColor: mColors, borderWidth: 0 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+  });
+
+  document.getElementById('method-legend').innerHTML = mLabels.map((l, i) =>
+    `<span><span class="legend-dot" style="background:${mColors[i]}"></span>${l} (${methodCounts[l]})</span>`
+  ).join('');
+
+  document.getElementById('table-body').innerHTML = rows.map(r => {
+    const s = Number(r.final_score);
+    const { bg, text } = scoreColors(s);
+    const fname = r.url?.split('/').pop() ?? r.url;
+    const tLabels = r.travel_labels ? r.travel_labels.split('|') : [];
+    const labelText = tLabels.length ? tLabels.slice(0,2).join(', ') + (tLabels.length > 2 ? '…' : '') : '—';
+    return `<tr>
+      <td style="width:76px;padding:4px 10px;">
+        <a href="${r.url}" target="_blank" rel="noopener">
+          <div class="thumb-wrap">
+            <img class="thumb" src="${thumbUrl(r.url)}" alt="" loading="lazy">
+            <span class="thumb-score" style="background:${bg};color:${text}">${s}</span>
+          </div>
+        </a>
+      </td>
+      <td title="${r.url}"><a href="${r.url}" target="_blank" rel="noopener">${fname}</a></td>
+      <td>${icon(r.faces_detected === 'true', false)}</td>
+      <td title="${r.travel_labels || ''}">${labelText}</td>
+      <td>${icon(r.text_detected === 'true', true)}</td>
+      <td>${icon(r.signs_detected === 'true', true)}</td>
+      <td>${r.iqa_score || '—'}</td>
+      <td>${methodLabel(r.method)}</td>
+    </tr>`;
+  }).join('');
+}
+</script>
+</body>
+</html>
