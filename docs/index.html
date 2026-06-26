@@ -8,46 +8,28 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg: #ffffff;
-      --bg-s: #f5f5f4;
-      --bg-t: #eeede9;
-      --text: #1a1a18;
-      --text-s: #6b6b66;
-      --border: rgba(0,0,0,0.1);
-      --border-em: rgba(0,0,0,0.2);
-      --radius: 8px;
-      --radius-lg: 12px;
-      --header-h: 56px;
+      --bg: #ffffff; --bg-s: #f5f5f4; --bg-t: #eeede9;
+      --text: #1a1a18; --text-s: #6b6b66;
+      --border: rgba(0,0,0,0.1); --border-em: rgba(0,0,0,0.2);
+      --radius: 8px; --radius-lg: 12px;
     }
     @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #161614;
-        --bg-s: #1f1f1d;
-        --bg-t: #282826;
-        --text: #f0ede8;
-        --text-s: #9b9b96;
-        --border: rgba(255,255,255,0.09);
-        --border-em: rgba(255,255,255,0.18);
-      }
+      :root { --bg: #161614; --bg-s: #1f1f1d; --bg-t: #282826; --text: #f0ede8; --text-s: #9b9b96; --border: rgba(255,255,255,0.09); --border-em: rgba(255,255,255,0.18); }
     }
+    body { font-family: system-ui,-apple-system,sans-serif; background: var(--bg-s); color: var(--text); font-size: 14px; line-height: 1.5; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-    body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg-s); color: var(--text); font-size: 14px; line-height: 1.5; height: 100vh; display: flex; flex-direction: column; }
-
-    /* ── Header ── */
-    header { height: var(--header-h); background: var(--bg); border-bottom: 0.5px solid var(--border); display: flex; align-items: center; padding: 0 1.5rem; gap: 12px; flex-shrink: 0; }
+    header { height: 52px; background: var(--bg); border-bottom: 0.5px solid var(--border); display: flex; align-items: center; padding: 0 1.25rem; gap: 10px; flex-shrink: 0; }
     header h1 { font-size: 15px; font-weight: 500; }
-    header .sub { font-size: 12px; color: var(--text-s); }
     .header-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
-
-    /* ── View toggle ── */
+    .btn { display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border: 0.5px solid var(--border-em); border-radius: var(--radius); background: none; color: var(--text); cursor: pointer; font-size: 13px; transition: background 0.1s; white-space: nowrap; }
+    .btn:hover { background: var(--bg-s); }
+    .btn.active { background: var(--bg-t); }
     .view-toggle { display: flex; background: var(--bg-s); border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-    .view-btn { padding: 5px 10px; border: none; background: none; cursor: pointer; color: var(--text-s); font-size: 16px; display: flex; align-items: center; transition: background 0.1s, color 0.1s; }
+    .view-btn { padding: 5px 9px; border: none; background: none; cursor: pointer; color: var(--text-s); font-size: 16px; display: flex; align-items: center; transition: background 0.1s, color 0.1s; }
     .view-btn.active { background: var(--bg); color: var(--text); }
     .view-btn:hover:not(.active) { background: var(--bg-t); }
 
-    /* ── Upload ── */
     #upload-area { flex: 1; display: flex; align-items: center; justify-content: center; }
     .drop-zone { border: 1.5px dashed var(--border-em); border-radius: var(--radius-lg); padding: 3rem 4rem; text-align: center; cursor: pointer; transition: background 0.15s; background: var(--bg); }
     .drop-zone:hover, .drop-zone.over { background: var(--bg-s); }
@@ -55,85 +37,89 @@
     .drop-zone p { color: var(--text-s); font-size: 14px; }
     .drop-zone p.hint { font-size: 12px; opacity: 0.6; margin-top: 6px; }
 
-    /* ── Dashboard layout ── */
     #dashboard { flex: 1; display: none; flex-direction: column; overflow: hidden; }
 
-    /* ── Stats bar ── */
-    .stats-bar { background: var(--bg); border-bottom: 0.5px solid var(--border); padding: 0 1.5rem; display: flex; gap: 0; flex-shrink: 0; overflow-x: auto; }
-    .stat { padding: 10px 20px; border-right: 0.5px solid var(--border); text-align: center; white-space: nowrap; }
-    .stat:first-child { padding-left: 0; }
+    .stats-bar { background: var(--bg); border-bottom: 0.5px solid var(--border); display: flex; flex-shrink: 0; overflow-x: auto; }
+    .stat { padding: 8px 18px; border-right: 0.5px solid var(--border); text-align: center; white-space: nowrap; }
     .stat-label { font-size: 10px; color: var(--text-s); text-transform: uppercase; letter-spacing: 0.04em; }
-    .stat-value { font-size: 20px; font-weight: 500; line-height: 1.2; }
+    .stat-value { font-size: 19px; font-weight: 500; line-height: 1.2; }
 
-    /* ── Charts row ── */
-    .charts-row { background: var(--bg); border-bottom: 0.5px solid var(--border); padding: 1rem 1.5rem; display: flex; gap: 24px; align-items: flex-start; flex-shrink: 0; }
+    .charts-row { background: var(--bg); border-bottom: 0.5px solid var(--border); padding: 0.875rem 1.25rem; display: flex; gap: 24px; align-items: flex-start; flex-shrink: 0; }
     .chart-block { flex: 1; min-width: 0; }
-    .chart-block h3 { font-size: 11px; font-weight: 500; color: var(--text-s); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.04em; }
-    .chart-wrap { position: relative; height: 120px; }
-    .legend { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+    .chart-block h3 { font-size: 10px; font-weight: 500; color: var(--text-s); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .chart-wrap { position: relative; height: 100px; }
+    .legend { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
     .legend span { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-s); }
     .legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
 
-    /* ── Content area ── */
-    .content-area { flex: 1; overflow-y: auto; padding: 1.25rem 1.5rem; }
+    /* Toolbar */
+    .toolbar { background: var(--bg); border-bottom: 0.5px solid var(--border); padding: 7px 1.25rem; display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
+    .toolbar-label { font-size: 11px; color: var(--text-s); white-space: nowrap; }
+    select { padding: 4px 8px; border: 0.5px solid var(--border-em); border-radius: var(--radius); background: var(--bg); color: var(--text); font-size: 12px; cursor: pointer; }
+    .toolbar-sep { width: 0.5px; height: 20px; background: var(--border-em); margin: 0 4px; }
 
-    /* ── TABLE VIEW ── */
+    /* Weights panel */
+    .weights-panel { background: var(--bg-s); border-bottom: 0.5px solid var(--border); padding: 10px 1.25rem; display: none; flex-shrink: 0; }
+    .weights-panel.open { display: block; }
+    .weights-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px 20px; }
+    .weight-row { display: flex; align-items: center; gap: 8px; }
+    .weight-label { font-size: 12px; color: var(--text-s); width: 110px; flex-shrink: 0; display: flex; align-items: center; gap: 5px; }
+    .weight-label i { font-size: 13px; }
+    input[type=range] { flex: 1; height: 4px; cursor: pointer; accent-color: #185FA5; }
+    .weight-val { font-size: 12px; font-weight: 500; width: 28px; text-align: right; color: var(--text); }
+    .weights-actions { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
+    .compound-note { font-size: 11px; color: var(--text-s); }
+
+    .content-area { flex: 1; overflow-y: auto; padding: 1rem 1.25rem; }
+
+    /* Table */
     .table-wrap { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
-    th { text-align: left; font-size: 11px; font-weight: 500; color: var(--text-s); padding: 8px 12px; border-bottom: 0.5px solid var(--border); white-space: nowrap; background: var(--bg-s); }
-    td { padding: 6px 12px; border-bottom: 0.5px solid var(--border); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; }
+    th { text-align: left; font-size: 11px; font-weight: 500; color: var(--text-s); padding: 7px 10px; border-bottom: 0.5px solid var(--border); white-space: nowrap; background: var(--bg-s); cursor: pointer; user-select: none; }
+    th:hover { color: var(--text); }
+    th .sort-icon { opacity: 0.4; font-size: 10px; }
+    th.sorted .sort-icon { opacity: 1; color: #185FA5; }
+    td { padding: 5px 10px; border-bottom: 0.5px solid var(--border); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; }
     tr:last-child td { border-bottom: none; }
     tr:hover td { background: var(--bg-s); }
-    .thumb-wrap { position: relative; width: 60px; height: 42px; display: inline-block; }
-    .thumb { width: 60px; height: 42px; object-fit: cover; border-radius: 4px; display: block; background: var(--bg-s); }
-    .thumb-score { position: absolute; bottom: 2px; right: 2px; font-size: 10px; font-weight: 600; padding: 1px 5px; border-radius: 3px; line-height: 1.5; }
-    .score-bar-bg { background: var(--border); border-radius: 4px; height: 5px; width: 56px; display: inline-block; vertical-align: middle; margin-right: 5px; }
-    .score-bar { height: 5px; border-radius: 4px; }
+    .thumb-wrap { position: relative; width: 58px; height: 40px; display: inline-block; }
+    .thumb { width: 58px; height: 40px; object-fit: cover; border-radius: 4px; display: block; background: var(--bg-s); }
+    .thumb-score { position: absolute; bottom: 2px; right: 2px; font-size: 10px; font-weight: 600; padding: 1px 4px; border-radius: 3px; line-height: 1.5; }
+    .score-bar-bg { background: var(--border); border-radius: 4px; height: 4px; width: 48px; display: inline-block; vertical-align: middle; margin-right: 4px; }
+    .score-bar { height: 4px; border-radius: 4px; }
 
-    /* ── GRID VIEW ── */
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
-
-    .asset-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; display: flex; flex-direction: column; transition: box-shadow 0.15s; }
+    /* Grid */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+    .asset-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; display: flex; flex-direction: column; }
     .asset-card:hover { border-color: var(--border-em); }
-
     .card-img-wrap { position: relative; width: 100%; padding-top: 66%; overflow: hidden; background: var(--bg-t); }
     .card-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
-    .card-score-badge { position: absolute; top: 8px; right: 8px; font-size: 15px; font-weight: 600; padding: 3px 10px; border-radius: 6px; line-height: 1.4; }
-
-    .card-body { padding: 10px 12px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
-    .card-filename { font-size: 12px; color: var(--text-s); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .card-score-badge { position: absolute; top: 7px; right: 7px; font-size: 14px; font-weight: 600; padding: 2px 9px; border-radius: 6px; line-height: 1.5; }
+    .card-compound-badge { position: absolute; top: 7px; left: 7px; font-size: 11px; font-weight: 500; padding: 2px 7px; border-radius: 6px; line-height: 1.5; background: rgba(0,0,0,0.55); color: #fff; }
+    .card-body { padding: 9px 11px; flex: 1; display: flex; flex-direction: column; gap: 7px; }
+    .card-filename { font-size: 11px; color: var(--text-s); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .card-filename a { color: var(--text-s); text-decoration: none; }
     .card-filename a:hover { color: var(--text); }
-
-    .card-tags { display: flex; flex-wrap: wrap; gap: 4px; }
-    .tag { font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 500; white-space: nowrap; }
+    .card-tags { display: flex; flex-wrap: wrap; gap: 3px; }
+    .tag { font-size: 10px; padding: 2px 6px; border-radius: 20px; font-weight: 500; white-space: nowrap; }
     .tag-face   { background: #E6F1FB; color: #185FA5; }
     .tag-travel { background: #EAF3DE; color: #3B6D11; }
     .tag-text   { background: #FCEBEB; color: #A32D2D; }
     .tag-sign   { background: #FCEBEB; color: #A32D2D; }
     .tag-ai     { background: #EEEDFE; color: #3C3489; }
     @media (prefers-color-scheme: dark) {
-      .tag-face   { background: #0C447C; color: #B5D4F4; }
-      .tag-travel { background: #27500A; color: #C0DD97; }
-      .tag-text   { background: #791F1F; color: #F7C1C1; }
-      .tag-sign   { background: #791F1F; color: #F7C1C1; }
-      .tag-ai     { background: #3C3489; color: #CECBF6; }
+      .tag-face { background:#0C447C;color:#B5D4F4; } .tag-travel { background:#27500A;color:#C0DD97; }
+      .tag-text { background:#791F1F;color:#F7C1C1; } .tag-sign { background:#791F1F;color:#F7C1C1; }
+      .tag-ai   { background:#3C3489;color:#CECBF6; }
     }
-
-    .card-details { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 8px; font-size: 11px; color: var(--text-s); border-top: 0.5px solid var(--border); padding-top: 8px; }
-    .card-details .detail-label { color: var(--text-s); }
-    .card-details .detail-value { color: var(--text); font-weight: 500; text-align: right; }
-
-    .method-pill { font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: 20px; }
-    .method-high { background: #EAF3DE; color: #3B6D11; }
-    .method-low  { background: #FCEBEB; color: #A32D2D; }
-    .method-ai   { background: #EEEDFE; color: #3C3489; }
+    .card-details { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 8px; font-size: 11px; border-top: 0.5px solid var(--border); padding-top: 7px; }
+    .detail-label { color: var(--text-s); }
+    .detail-value { color: var(--text); font-weight: 500; text-align: right; }
+    .method-pill { font-size: 10px; font-weight: 500; padding: 1px 6px; border-radius: 20px; }
+    .method-high { background:#EAF3DE;color:#3B6D11; } .method-low { background:#FCEBEB;color:#A32D2D; } .method-ai { background:#EEEDFE;color:#3C3489; }
     @media (prefers-color-scheme: dark) {
-      .method-high { background: #27500A; color: #C0DD97; }
-      .method-low  { background: #791F1F; color: #F7C1C1; }
-      .method-ai   { background: #3C3489; color: #CECBF6; }
+      .method-high { background:#27500A;color:#C0DD97; } .method-low { background:#791F1F;color:#F7C1C1; } .method-ai { background:#3C3489;color:#CECBF6; }
     }
-
     a { color: #185FA5; text-decoration: none; }
     a:hover { text-decoration: underline; }
     @media (prefers-color-scheme: dark) { a { color: #85B7EB; } }
@@ -142,23 +128,16 @@
 <body>
 
 <header>
-  <i class="ti ti-camera" style="font-size:20px;" aria-hidden="true"></i>
-  <div>
-    <h1>Travel Photo Scorer</h1>
-  </div>
+  <i class="ti ti-camera" style="font-size:19px;" aria-hidden="true"></i>
+  <h1>Travel Photo Scorer</h1>
   <div class="header-actions">
-    <label style="font-size:12px; color:var(--text-s); cursor:pointer; display:flex; align-items:center; gap:6px;">
-      <i class="ti ti-upload" style="font-size:15px;" aria-hidden="true"></i>
-      Load CSV
+    <label class="btn" style="cursor:pointer;">
+      <i class="ti ti-upload" style="font-size:14px;" aria-hidden="true"></i> Load CSV
       <input type="file" id="file-input" accept=".csv" style="display:none;">
     </label>
     <div class="view-toggle" id="view-toggle" style="display:none;">
-      <button class="view-btn active" id="btn-table" title="Table view" aria-label="Table view">
-        <i class="ti ti-layout-list" aria-hidden="true"></i>
-      </button>
-      <button class="view-btn" id="btn-grid" title="Grid view" aria-label="Grid view">
-        <i class="ti ti-layout-grid" aria-hidden="true"></i>
-      </button>
+      <button class="view-btn active" id="btn-table" title="Table view" aria-label="Table view"><i class="ti ti-layout-list" aria-hidden="true"></i></button>
+      <button class="view-btn" id="btn-grid" title="Grid view" aria-label="Grid view"><i class="ti ti-layout-grid" aria-hidden="true"></i></button>
     </div>
   </div>
 </header>
@@ -179,10 +158,39 @@
       <h3>Score distribution</h3>
       <div class="chart-wrap"><canvas id="distChart" role="img" aria-label="Histogram of final scores 0-100"></canvas></div>
     </div>
-    <div class="chart-block" style="max-width:200px;">
+    <div class="chart-block" style="max-width:180px;">
       <h3>Scoring method</h3>
       <div class="chart-wrap"><canvas id="methodChart" role="img" aria-label="Donut chart of scoring methods"></canvas></div>
       <div class="legend" id="method-legend"></div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <span class="toolbar-label">Sort by</span>
+    <select id="sort-field">
+      <option value="compound">Compound score</option>
+      <option value="final_score">Final score</option>
+      <option value="iqa_score">IQA</option>
+      <option value="faces_detected">Faces</option>
+      <option value="travel_labels">Travel labels</option>
+      <option value="text_detected">Text detected</option>
+      <option value="signs_detected">Signs detected</option>
+      <option value="ai_vision_tokens">AI Vision tokens</option>
+    </select>
+    <select id="sort-dir">
+      <option value="desc">High → Low</option>
+      <option value="asc">Low → High</option>
+    </select>
+    <div class="toolbar-sep"></div>
+    <button class="btn" id="weights-toggle"><i class="ti ti-sliders" style="font-size:14px;" aria-hidden="true"></i> Weights</button>
+    <span id="compound-indicator" style="font-size:11px; color:var(--text-s); display:none;">Compound score active</span>
+  </div>
+
+  <div class="weights-panel" id="weights-panel">
+    <div class="weights-grid" id="weights-grid"></div>
+    <div class="weights-actions">
+      <button class="btn" id="reset-weights"><i class="ti ti-refresh" style="font-size:13px;" aria-hidden="true"></i> Reset</button>
+      <span class="compound-note">Compound = weighted average of selected signals. Penalties subtract from score.</span>
     </div>
   </div>
 
@@ -190,18 +198,7 @@
     <div id="view-table">
       <div class="table-wrap">
         <table>
-          <thead>
-            <tr>
-              <th style="width:76px;"></th>
-              <th style="width:30%;">File</th>
-              <th style="width:8%;">Faces</th>
-              <th style="width:18%;">Travel labels</th>
-              <th style="width:7%;">Text</th>
-              <th style="width:7%;">Sign</th>
-              <th style="width:6%;">IQA</th>
-              <th style="width:10%;">Method</th>
-            </tr>
-          </thead>
+          <thead id="table-head"></thead>
           <tbody id="table-body"></tbody>
         </table>
       </div>
@@ -213,54 +210,86 @@
 </div>
 
 <script>
-const dropZone = document.getElementById('drop-zone');
-const fileInput = document.getElementById('file-input');
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('over'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
-dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('over'); loadFile(e.dataTransfer.files[0]); });
-fileInput.addEventListener('change', e => loadFile(e.target.files[0]));
+let allRows = [];
+let distChart, methodChart;
 
-document.getElementById('btn-table').addEventListener('click', () => setView('table'));
-document.getElementById('btn-grid').addEventListener('click', () => setView('grid'));
+const WEIGHTS_DEF = [
+  { key: 'w_faces',    label: 'Faces / people', icon: 'ti-user',      min: 0,   max: 10, def: 5,  sign: +1 },
+  { key: 'w_travel',   label: 'Travel labels',  icon: 'ti-mountain',  min: 0,   max: 10, def: 5,  sign: +1 },
+  { key: 'w_iqa',      label: 'IQA quality',    icon: 'ti-photo',     min: 0,   max: 10, def: 3,  sign: +1 },
+  { key: 'w_text',     label: 'Text (penalty)',  icon: 'ti-letter-t',  min: 0,   max: 10, def: 4,  sign: -1 },
+  { key: 'w_sign',     label: 'Signs (penalty)', icon: 'ti-road-sign', min: 0,   max: 10, def: 4,  sign: -1 },
+  { key: 'w_ai',       label: 'AI Vision score', icon: 'ti-sparkles',  min: 0,   max: 10, def: 6,  sign: +1 },
+];
 
-function setView(v) {
-  document.getElementById('view-table').style.display = v === 'table' ? '' : 'none';
-  document.getElementById('view-grid').style.display  = v === 'grid'  ? '' : 'none';
-  document.getElementById('btn-table').classList.toggle('active', v === 'table');
-  document.getElementById('btn-grid').classList.toggle('active', v === 'grid');
+const weights = {};
+WEIGHTS_DEF.forEach(w => weights[w.key] = w.def);
+
+function getWeightsGrid() {
+  return document.getElementById('weights-grid');
 }
 
-function loadFile(file) {
-  const reader = new FileReader();
-  reader.onload = e => render(parseCSV(e.target.result));
-  reader.readAsText(file);
-}
+function buildWeightsUI() {
+  getWeightsGrid().innerHTML = WEIGHTS_DEF.map(w => `
+    <div class="weight-row">
+      <span class="weight-label"><i class="ti ${w.icon}" aria-hidden="true"></i>${w.label}${w.sign < 0 ? '' : ''}</span>
+      <input type="range" min="${w.min}" max="${w.max}" step="1" value="${weights[w.key]}" data-key="${w.key}" aria-label="${w.label} weight">
+      <span class="weight-val" id="wv_${w.key}">${weights[w.key]}</span>
+    </div>
+  `).join('');
 
-function parseCSV(text) {
-  const lines = text.trim().split('\n');
-  const headers = splitRow(lines[0]);
-  return lines.slice(1).filter(l => l.trim()).map(l => {
-    const vals = splitRow(l);
-    const obj = {};
-    headers.forEach((h, i) => obj[h.trim()] = (vals[i] ?? '').trim());
-    return obj;
+  getWeightsGrid().querySelectorAll('input[type=range]').forEach(el => {
+    el.addEventListener('input', () => {
+      const k = el.dataset.key;
+      weights[k] = Number(el.value);
+      document.getElementById('wv_' + k).textContent = el.value;
+      rerender();
+    });
   });
 }
 
-function splitRow(line) {
-  const fields = []; let cur = '', inQ = false;
-  for (let i = 0; i < line.length; i++) {
-    const c = line[i];
-    if (c === '"') { if (inQ && line[i+1] === '"') { cur += '"'; i++; } else inQ = !inQ; }
-    else if (c === ',' && !inQ) { fields.push(cur); cur = ''; }
-    else cur += c;
-  }
-  fields.push(cur);
-  return fields;
+function resetWeights() {
+  WEIGHTS_DEF.forEach(w => {
+    weights[w.key] = w.def;
+    const el = document.querySelector(`input[data-key="${w.key}"]`);
+    if (el) { el.value = w.def; document.getElementById('wv_' + w.key).textContent = w.def; }
+  });
+  rerender();
 }
 
-function thumbUrl(url, w, h) {
-  return url.replace('/image/upload/', `/image/upload/w_${w},h_${h},c_fill/`);
+function compound(r) {
+  const faces   = r.faces_detected === 'true' ? 1 : 0;
+  const travel  = Math.min((r.travel_labels ? r.travel_labels.split('|').length : 0), 5) / 5;
+  const iqa     = Number(r.iqa_score) / 100 || 0;
+  const text    = r.text_detected   === 'true' ? 1 : 0;
+  const sign    = r.signs_detected  === 'true' ? 1 : 0;
+  const ai      = r.ai_vision_called === 'true' ? Number(r.final_score) / 100 : iqa * 0.5 + faces * 0.5;
+
+  const pos = weights.w_faces * faces + weights.w_travel * travel + weights.w_iqa * iqa + weights.w_ai * ai;
+  const neg = weights.w_text * text + weights.w_sign * sign;
+  const totalW = weights.w_faces + weights.w_travel + weights.w_iqa + weights.w_ai + weights.w_text + weights.w_sign;
+
+  if (totalW === 0) return 50;
+  const raw = (pos - neg) / totalW;
+  return Math.round(Math.max(0, Math.min(1, (raw + 0.5) * (4/3))) * 100);
+}
+
+function sortRows(rows) {
+  const field = document.getElementById('sort-field').value;
+  const dir   = document.getElementById('sort-dir').value === 'asc' ? 1 : -1;
+  return [...rows].sort((a, b) => {
+    let av, bv;
+    if (field === 'compound')        { av = compound(a); bv = compound(b); }
+    else if (field === 'faces_detected' || field === 'text_detected' || field === 'signs_detected') {
+      av = a[field] === 'true' ? 1 : 0; bv = b[field] === 'true' ? 1 : 0;
+    }
+    else if (field === 'travel_labels') {
+      av = a.travel_labels ? a.travel_labels.split('|').length : 0;
+      bv = b.travel_labels ? b.travel_labels.split('|').length : 0;
+    }
+    else { av = Number(a[field]) || 0; bv = Number(b[field]) || 0; }
+    return (av - bv) * dir;
+  });
 }
 
 function scoreColors(s) {
@@ -271,7 +300,7 @@ function scoreColors(s) {
 
 function icon(yes, danger) {
   const color = yes ? (danger ? '#E24B4A' : '#639922') : 'var(--text-s)';
-  return `<i class="ti ${yes ? 'ti-check' : 'ti-minus'}" style="color:${color}" aria-label="${yes ? 'yes' : 'no'}"></i>`;
+  return `<i class="ti ${yes ? 'ti-check' : 'ti-minus'}" style="color:${color}" aria-label="${yes?'yes':'no'}"></i>`;
 }
 
 function methodClass(m) {
@@ -280,7 +309,6 @@ function methodClass(m) {
   if (m.startsWith('rule:low'))  return 'method-low';
   return 'method-ai';
 }
-
 function methodShort(m) {
   if (!m) return 'ai vision';
   if (m.startsWith('rule:high')) return 'rule: high';
@@ -288,114 +316,214 @@ function methodShort(m) {
   return 'ai vision';
 }
 
-function render(rows) {
-  rows.sort((a, b) => Number(b.final_score) - Number(a.final_score));
-  document.getElementById('upload-area').style.display = 'none';
-  document.getElementById('dashboard').style.display = 'flex';
-  document.getElementById('view-toggle').style.display = '';
+function thumbUrl(url, w, h) {
+  return url.replace('/image/upload/', `/image/upload/w_${w},h_${h},c_fill/`);
+}
 
-  const scores = rows.map(r => Number(r.final_score)).filter(n => !isNaN(n));
-  const avg = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
-  const aiCalls     = rows.filter(r => r.ai_vision_called === 'true').length;
-  const totalAddon  = rows.reduce((s, r) => s + (Number(r.addon_units)  || 0), 0);
-  const totalGoogle = rows.reduce((s, r) => s + (Number(r.google_units) || 0), 0);
-  const totalAI     = rows.reduce((s, r) => s + (Number(r.ai_vision_tokens) || 0), 0);
+function renderTable(rows) {
+  const sortField = document.getElementById('sort-field').value;
+  const cols = [
+    { key: null,            label: '',               w: '70px'  },
+    { key: 'compound',      label: 'Compound',       w: '10%'   },
+    { key: 'final_score',   label: 'Score',          w: '10%'   },
+    { key: null,            label: 'File',           w: '22%'   },
+    { key: 'faces_detected',label: 'Faces',          w: '7%'    },
+    { key: 'travel_labels', label: 'Travel labels',  w: '16%'   },
+    { key: 'text_detected', label: 'Text',           w: '6%'    },
+    { key: 'signs_detected',label: 'Sign',           w: '6%'    },
+    { key: 'iqa_score',     label: 'IQA',            w: '6%'    },
+    { key: null,            label: 'Method',         w: '8%'    },
+  ];
 
-  document.getElementById('stats-bar').innerHTML = [
-    ['Images', rows.length],
-    ['Avg score', avg],
-    ['AI Vision calls', aiCalls],
-    ['Add-on units', totalAddon],
-    ['Google units', totalGoogle],
-    ['AI Vision tokens', totalAI],
-  ].map(([label, value]) => `<div class="stat"><div class="stat-label">${label}</div><div class="stat-value">${value}</div></div>`).join('');
+  document.getElementById('table-head').innerHTML = '<tr>' + cols.map(c =>
+    c.key ? `<th style="width:${c.w}" data-key="${c.key}" class="${sortField===c.key?'sorted':''}">${c.label} <span class="sort-icon">${sortField===c.key ? (document.getElementById('sort-dir').value==='asc'?'↑':'↓') : '↕'}</span></th>`
+           : `<th style="width:${c.w}">${c.label}</th>`
+  ).join('') + '</tr>';
 
-  const buckets = Array(10).fill(0);
-  scores.forEach(s => { buckets[Math.min(9, Math.floor(s / 10))]++; });
-
-  new Chart(document.getElementById('distChart'), {
-    type: 'bar',
-    data: {
-      labels: ['0','10','20','30','40','50','60','70','80','90+'],
-      datasets: [{ data: buckets, backgroundColor: buckets.map((_, i) => i >= 8 ? '#639922' : i >= 3 ? '#BA7517' : '#E24B4A'), borderRadius: 3 }]
-    },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { font: { size: 10 } } }, y: { ticks: { stepSize: 1 } } } }
+  document.querySelectorAll('th[data-key]').forEach(th => {
+    th.addEventListener('click', () => {
+      const k = th.dataset.key;
+      const sf = document.getElementById('sort-field');
+      const sd = document.getElementById('sort-dir');
+      if (sf.value === k) sd.value = sd.value === 'desc' ? 'asc' : 'desc';
+      else { sf.value = k; sd.value = 'desc'; }
+      rerender();
+    });
   });
 
-  const methodCounts = {};
-  rows.forEach(r => { const m = methodShort(r.method); methodCounts[m] = (methodCounts[m] || 0) + 1; });
-  const mLabels = Object.keys(methodCounts);
-  const mColors = mLabels.map(l => l === 'rule: high' ? '#639922' : l === 'rule: low' ? '#E24B4A' : '#7F77DD');
-
-  new Chart(document.getElementById('methodChart'), {
-    type: 'doughnut',
-    data: { labels: mLabels, datasets: [{ data: mLabels.map(l => methodCounts[l]), backgroundColor: mColors, borderWidth: 0 }] },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-  });
-
-  document.getElementById('method-legend').innerHTML = mLabels.map((l, i) =>
-    `<span><span class="legend-dot" style="background:${mColors[i]}"></span>${l} (${methodCounts[l]})</span>`
-  ).join('');
-
-  // ── Table ──
   document.getElementById('table-body').innerHTML = rows.map(r => {
-    const s = Number(r.final_score);
-    const { bg, text } = scoreColors(s);
+    const cs = compound(r);
+    const fs = Number(r.final_score);
+    const { bg: cbg, text: ctxt } = scoreColors(cs);
+    const { bg: fbg, text: ftxt } = scoreColors(fs);
     const fname = r.url?.split('/').pop() ?? r.url;
     const tLabels = r.travel_labels ? r.travel_labels.split('|') : [];
     return `<tr>
-      <td style="padding:4px 12px;">
+      <td style="padding:4px 10px;">
         <a href="${r.url}" target="_blank" rel="noopener">
           <div class="thumb-wrap">
-            <img class="thumb" src="${thumbUrl(r.url, 120, 84)}" alt="" loading="lazy">
-            <span class="thumb-score" style="background:${bg};color:${text}">${s}</span>
+            <img class="thumb" src="${thumbUrl(r.url,120,84)}" alt="" loading="lazy">
+            <span class="thumb-score" style="background:${cbg};color:${ctxt}">${cs}</span>
           </div>
         </a>
       </td>
+      <td>
+        <div class="score-bar-bg"><div class="score-bar" style="width:${cs}%;background:${cbg}"></div></div>
+        <span style="font-size:12px;font-weight:500;">${cs}</span>
+      </td>
+      <td><span style="font-size:12px;padding:1px 6px;border-radius:4px;background:${fbg};color:${ftxt}">${fs}</span></td>
       <td title="${r.url}"><a href="${r.url}" target="_blank" rel="noopener">${fname}</a></td>
-      <td>${icon(r.faces_detected === 'true', false)}</td>
-      <td title="${r.travel_labels || ''}">${tLabels.length ? tLabels.slice(0,2).join(', ') + (tLabels.length > 2 ? '…' : '') : '—'}</td>
-      <td>${icon(r.text_detected === 'true', true)}</td>
-      <td>${icon(r.signs_detected === 'true', true)}</td>
-      <td>${r.iqa_score || '—'}</td>
+      <td>${icon(r.faces_detected==='true', false)}</td>
+      <td title="${r.travel_labels||''}">${tLabels.length ? tLabels.slice(0,2).join(', ')+(tLabels.length>2?'…':'') : '—'}</td>
+      <td>${icon(r.text_detected==='true', true)}</td>
+      <td>${icon(r.signs_detected==='true', true)}</td>
+      <td>${r.iqa_score||'—'}</td>
       <td><span class="method-pill ${methodClass(r.method)}">${methodShort(r.method)}</span></td>
     </tr>`;
   }).join('');
+}
 
-  // ── Grid ──
+function renderGrid(rows) {
   document.getElementById('grid-body').innerHTML = rows.map(r => {
-    const s = Number(r.final_score);
-    const { bg, text } = scoreColors(s);
+    const cs = compound(r);
+    const fs = Number(r.final_score);
+    const { bg: cbg } = scoreColors(cs);
+    const { bg: fbg, text: ftxt } = scoreColors(fs);
     const fname = r.url?.split('/').pop() ?? r.url;
     const tLabels = r.travel_labels ? r.travel_labels.split('|') : [];
 
     const tags = [];
-    if (r.faces_detected === 'true') tags.push(`<span class="tag tag-face"><i class="ti ti-user" style="font-size:10px" aria-hidden="true"></i> faces</span>`);
-    tLabels.slice(0, 3).forEach(l => tags.push(`<span class="tag tag-travel">${l}</span>`));
-    if (r.text_detected === 'true')  tags.push(`<span class="tag tag-text"><i class="ti ti-letter-t" style="font-size:10px" aria-hidden="true"></i> text</span>`);
-    if (r.signs_detected === 'true') tags.push(`<span class="tag tag-sign"><i class="ti ti-road-sign" style="font-size:10px" aria-hidden="true"></i> sign</span>`);
-    if (r.ai_vision_called === 'true') tags.push(`<span class="tag tag-ai"><i class="ti ti-sparkles" style="font-size:10px" aria-hidden="true"></i> ai vision</span>`);
+    if (r.faces_detected==='true') tags.push(`<span class="tag tag-face"><i class="ti ti-user" style="font-size:10px" aria-hidden="true"></i> faces</span>`);
+    tLabels.slice(0,3).forEach(l => tags.push(`<span class="tag tag-travel">${l}</span>`));
+    if (r.text_detected==='true')  tags.push(`<span class="tag tag-text"><i class="ti ti-letter-t" style="font-size:10px" aria-hidden="true"></i> text</span>`);
+    if (r.signs_detected==='true') tags.push(`<span class="tag tag-sign"><i class="ti ti-road-sign" style="font-size:10px" aria-hidden="true"></i> sign</span>`);
+    if (r.ai_vision_called==='true') tags.push(`<span class="tag tag-ai"><i class="ti ti-sparkles" style="font-size:10px" aria-hidden="true"></i> ai vision</span>`);
 
     return `<div class="asset-card">
       <a href="${r.url}" target="_blank" rel="noopener">
         <div class="card-img-wrap">
-          <img class="card-img" src="${thumbUrl(r.url, 480, 320)}" alt="" loading="lazy">
-          <span class="card-score-badge" style="background:${bg};color:${text}">${s}</span>
+          <img class="card-img" src="${thumbUrl(r.url,480,320)}" alt="" loading="lazy">
+          <span class="card-score-badge" style="background:${fbg};color:${ftxt}">${fs}</span>
+          <span class="card-compound-badge" title="Compound score">${cs} ⚖</span>
         </div>
       </a>
       <div class="card-body">
         <div class="card-filename" title="${r.url}"><a href="${r.url}" target="_blank" rel="noopener">${fname}</a></div>
         ${tags.length ? `<div class="card-tags">${tags.join('')}</div>` : ''}
         <div class="card-details">
-          <span class="detail-label">IQA</span><span class="detail-value">${r.iqa_score || '—'}</span>
+          <span class="detail-label">Compound</span><span class="detail-value"><span style="font-weight:600;color:${cbg}">${cs}</span></span>
+          <span class="detail-label">Final score</span><span class="detail-value">${fs}</span>
+          <span class="detail-label">IQA</span><span class="detail-value">${r.iqa_score||'—'}</span>
           <span class="detail-label">Method</span><span class="detail-value"><span class="method-pill ${methodClass(r.method)}">${methodShort(r.method)}</span></span>
-          <span class="detail-label">Add-on</span><span class="detail-value">${r.addon_units || 0} units</span>
-          <span class="detail-label">Google</span><span class="detail-value">${r.google_units || 0} units</span>
         </div>
       </div>
     </div>`;
   }).join('');
 }
+
+function rerender() {
+  if (!allRows.length) return;
+  const sorted = sortRows(allRows);
+  renderTable(sorted);
+  renderGrid(sorted);
+}
+
+function render(rows) {
+  allRows = rows;
+  document.getElementById('upload-area').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'flex';
+  document.getElementById('view-toggle').style.display = '';
+
+  const scores = rows.map(r => Number(r.final_score)).filter(n => !isNaN(n));
+  const avg = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
+  const aiCalls     = rows.filter(r => r.ai_vision_called==='true').length;
+  const totalAddon  = rows.reduce((s,r) => s+(Number(r.addon_units)||0), 0);
+  const totalGoogle = rows.reduce((s,r) => s+(Number(r.google_units)||0), 0);
+  const totalAI     = rows.reduce((s,r) => s+(Number(r.ai_vision_tokens)||0), 0);
+
+  document.getElementById('stats-bar').innerHTML = [
+    ['Images', rows.length], ['Avg score', avg], ['AI Vision calls', aiCalls],
+    ['Add-on units', totalAddon], ['Google units', totalGoogle], ['AI Vision tokens', totalAI],
+  ].map(([l,v]) => `<div class="stat"><div class="stat-label">${l}</div><div class="stat-value">${v}</div></div>`).join('');
+
+  const buckets = Array(10).fill(0);
+  scores.forEach(s => { buckets[Math.min(9, Math.floor(s/10))]++; });
+
+  if (distChart) distChart.destroy();
+  distChart = new Chart(document.getElementById('distChart'), {
+    type: 'bar',
+    data: { labels: ['0','10','20','30','40','50','60','70','80','90+'], datasets: [{ data: buckets, backgroundColor: buckets.map((_,i) => i>=8?'#639922':i>=3?'#BA7517':'#E24B4A'), borderRadius: 3 }] },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{font:{size:10}}},y:{ticks:{stepSize:1}}} }
+  });
+
+  const mc = {};
+  rows.forEach(r => { const m = methodShort(r.method); mc[m]=(mc[m]||0)+1; });
+  const mL = Object.keys(mc);
+  const mC = mL.map(l => l==='rule: high'?'#639922':l==='rule: low'?'#E24B4A':'#7F77DD');
+
+  if (methodChart) methodChart.destroy();
+  methodChart = new Chart(document.getElementById('methodChart'), {
+    type: 'doughnut',
+    data: { labels: mL, datasets: [{ data: mL.map(l=>mc[l]), backgroundColor: mC, borderWidth:0 }] },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }
+  });
+  document.getElementById('method-legend').innerHTML = mL.map((l,i) =>
+    `<span><span class="legend-dot" style="background:${mC[i]}"></span>${l} (${mc[l]})</span>`
+  ).join('');
+
+  rerender();
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const headers = splitRow(lines[0]);
+  return lines.slice(1).filter(l=>l.trim()).map(l => {
+    const vals = splitRow(l), obj = {};
+    headers.forEach((h,i) => obj[h.trim()]=(vals[i]??'').trim());
+    return obj;
+  });
+}
+function splitRow(line) {
+  const fields=[]; let cur='', inQ=false;
+  for (let i=0;i<line.length;i++) {
+    const c=line[i];
+    if (c==='"') { if(inQ&&line[i+1]==='"'){cur+='"';i++;} else inQ=!inQ; }
+    else if (c===','&&!inQ) { fields.push(cur); cur=''; }
+    else cur+=c;
+  }
+  fields.push(cur); return fields;
+}
+
+function loadFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => render(parseCSV(e.target.result));
+  reader.readAsText(file);
+}
+
+function setView(v) {
+  document.getElementById('view-table').style.display = v==='table' ? '' : 'none';
+  document.getElementById('view-grid').style.display  = v==='grid'  ? '' : 'none';
+  document.getElementById('btn-table').classList.toggle('active', v==='table');
+  document.getElementById('btn-grid').classList.toggle('active', v==='grid');
+}
+
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('over'); loadFile(e.dataTransfer.files[0]); });
+fileInput.addEventListener('change', e => loadFile(e.target.files[0]));
+document.getElementById('btn-table').addEventListener('click', () => setView('table'));
+document.getElementById('btn-grid').addEventListener('click', () => setView('grid'));
+document.getElementById('sort-field').addEventListener('change', rerender);
+document.getElementById('sort-dir').addEventListener('change', rerender);
+document.getElementById('weights-toggle').addEventListener('click', () => {
+  document.getElementById('weights-panel').classList.toggle('open');
+  document.getElementById('weights-toggle').classList.toggle('active');
+});
+document.getElementById('reset-weights').addEventListener('click', resetWeights);
+
+buildWeightsUI();
 </script>
 </body>
 </html>
